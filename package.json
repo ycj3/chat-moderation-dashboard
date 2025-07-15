@@ -9,11 +9,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.20.7",
+    "body-parser": "^2.2.0",
     "meteor-node-stubs": "^1.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/body-parser": "^1.19.6",
     "@types/mocha": "^8.2.3",
     "@types/node": "^18.13.0",
     "@types/react": "^18.0.26",

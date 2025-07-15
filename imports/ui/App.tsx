@@ -1,8 +1,8 @@
 import React from "react";
-import BlockList from "./pages/BlockList";
+import MainLayout from "./layout/MainLayout";
 
 export const App = () => (
   <div>
-    <BlockList />
+    <MainLayout />
   </div>
 );
