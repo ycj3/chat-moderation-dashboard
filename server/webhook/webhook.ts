@@ -3,35 +3,9 @@ import bodyParser from 'body-parser';
 import { ModerationPolicies } from '/imports/api/moderation/policies/collection';
 import { hasBlockedWords, replaceBlockedWords } from '/imports/api/blocklist/service';
 import { logDev } from '/imports/utils/logger';
+import { getValueByPath, setValueByPath } from '../utils/objectUtils';
 
 const jsonParser = bodyParser.json();
-
-// Helper: Safely get the value from an object by a dot-separated path.
-function getValueByPath(obj: string, pathStr: string) {
-    const path = pathStr.split('.');
-    let current = obj;
-    for (const key of path) {
-        if (current == null || typeof current !== 'object') return undefined;
-        current = current[key];
-    }
-    return current;
-}
-
-
-// Helper: Safely set the value into an object by a dot-separated path.
-function setValueByPath(obj: any, pathStr: string, value: string) {
-    const path = pathStr.split('.');
-    let current = obj;
-    for (let i = 0; i < path.length - 1; i++) {
-        const key = path[i];
-        if (!(key in current) || typeof current[key] !== 'object') {
-            current[key] = {};
-        }
-        current = current[key];
-    }
-    const lastKey = path[path.length - 1];
-    current[lastKey] = value;
-}
 
 WebApp.handlers.use('/webhook/moderate', jsonParser, async (req, res) => {
     if (req.method !== 'POST') {
