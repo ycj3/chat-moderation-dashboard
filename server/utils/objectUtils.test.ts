@@ -25,3 +25,26 @@ describe('getValueByPath', () => {
         expect(getValueByPath(obj, '')).to.equal(obj);
     });
 });
+
+describe('setValueByPath', () => {
+    const obj = {
+        msg: {
+            content: 'hello',
+            metadata: { lang: 'en' },
+        },
+    };
+
+    it('sets top-level field', () => {
+        setValueByPath(obj, 'msg.content', 'world');
+        expect(obj.msg.content).to.equal('world');
+    });
+
+    it('sets nested field', () => {
+        setValueByPath(obj, 'msg.metadata.lang', 'fr');
+        expect(obj.msg.metadata.lang).to.equal('fr');
+    });
+
+    it('does not throw for non-existent path when setting value', () => {
+        expect(() => setValueByPath(obj, 'non.existent.path', 'test')).to.not.throw();
+    });
+});
