@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import { ModerationPolicies } from '/imports/api/moderation/policies/collection';
 import { hasBlockedWords, replaceBlockedWords } from '/imports/api/blocklist/service';
 import { logDev } from '/imports/utils/logger';
-import { getValueByPath, setValueByPath } from '../utils/objectUtils';
+import { getValueByField, setValueByField } from '../utils/objectUtils';
 
 const jsonParser = bodyParser.json();
 
@@ -33,7 +33,7 @@ WebApp.handlers.use('/webhook/moderate', jsonParser, async (req, res) => {
         if (messageType === 'txt') {
             content = messageBody.msg;
         } else if (messageType === 'custom') {
-            content = getValueByPath(messageBody.customExts?.[0] || {}, policies.fields?.[0] || '');
+            content = getValueByField(messageBody.customExts?.[0] || {}, policies.customField || '');
         }
         if (!content) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -58,7 +58,8 @@ WebApp.handlers.use('/webhook/moderate', jsonParser, async (req, res) => {
                 response.payload = payload;
             } else if (messageBody.type === 'custom' && action === 'Replace With Asterisks (*)') {
                 const result = await replaceBlockedWords(content);
-                setValueByPath(messageBody.customExts?.[0] || {}, policies.fields?.[0] || '', result.updatedText);
+                setValueByField(messageBody.customExts?.[0] || {}, policies.customField || '', result.updatedText);
+                setValueByField(messageBody["v2:customExts"] || {}, policies.customField || '', result.updatedText);
                 response.payload = payload;
             }
         }

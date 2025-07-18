@@ -5,8 +5,9 @@ export enum ModerationAction {
 }
 
 export type ModerationPolicy = {
-    createdAt: Date;
-    type: string; // e.g., 'txt', 'image', etc.
-    action: ModerationAction;
-    fields: string; // e.g., ['msg', 'caption']
+  createdAt: Date;
+  type: string; // e.g., 'txt', 'image', etc.
+  action: ModerationAction;
+  customField: string;
+  updatedAt: Date;
 }

@@ -7,7 +7,7 @@ Meteor.publish("moderation_policies", function () {
         fields: {
             type: 1,
             action: 1,
-            fields: 1
+            customField: 1
         }
     });
 });
