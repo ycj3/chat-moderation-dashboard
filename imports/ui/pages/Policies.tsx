@@ -21,7 +21,9 @@ export default function Policies() {
           setPolicies(res);
           const draft: Record<string, ModerationPolicy> = {};
           res.forEach((p) => {
-            draft[p.type] = p;
+            draft[p.type] = {
+              ...p,
+              customField: p.customField || "",};
           });
           setDraftPolicies(draft);
         }
@@ -45,10 +47,10 @@ export default function Policies() {
     if (draft.action) {
       Meteor.call("moderation.setPolicy", { type, action: draft.action });
     }
-    if (type === "custom" && draft.fields) {
-      Meteor.call("moderation.setPolicyFields", {
+    if (type === "custom" && draft.customField) {
+      Meteor.call("moderation.setPolicyCustomField", {
         type,
-        fields: [draft.fields],
+        customField: draft.customField,
       });
     }
     setPolicies((prev) => {
@@ -56,8 +58,9 @@ export default function Policies() {
       const updatedPolicy: ModerationPolicy = {
         type,
         action: draft.action,
-        fields: draft.fields,
+        customField: draft.customField,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       if (existing) {
@@ -80,7 +83,7 @@ export default function Policies() {
               <tr>
                 <th style={{ width: "160px" }}>Message Type</th>
                 <th style={{ width: "220px" }}>Action</th>
-                <th>Audit Field (for 'custom' type only)</th>
+                <th>Custom Moderation Field</th>
                 <th style={{ width: "100px" }}></th>
               </tr>
             </thead>
@@ -113,10 +116,10 @@ export default function Policies() {
                         <input
                           type="text"
                           className="form-control form-control-sm"
-                          placeholder="e.g. v2:customExts.msg"
-                          value={draft.fields || ""}
+                          placeholder="Enter your custom field name"
+                          value={draft.customField || ""}
                           onChange={(e) =>
-                            handleDraftChange(type, "field", e.target.value)
+                            handleDraftChange(type, "customField", e.target.value)
                           }
                         />
                       )}

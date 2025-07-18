@@ -1,19 +1,41 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
+import { ModerationAction } from '/imports/types/ModerationPolicy';
 import { ModerationPolicies } from './collection';
 
 Meteor.methods({
   async 'moderation.getPolicies'() {
-    return ModerationPolicies.find({}, { fields: { type: 1, action: 1, fields: 1 } }).fetch();
+    const policies = ModerationPolicies.find({}, {
+      fields: {
+        type: 1,
+        action: 1,
+        customField: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      }
+    });
+    return policies.map(p => ({
+      type: p.type,
+      action: p.action,
+      customField: p.customField || "",
+      createdAt: p.createdAt ? p.createdAt.toISOString() : null,
+      updatedAt: p.updatedAt ? p.updatedAt.toISOString() : null,
+    }));
   },
-  async 'moderation.setPolicy'({ type, action }) {
+
+  async 'moderation.setPolicy'({ type, action }: { type: string; action: ModerationAction }) {
     check(type, String);
-    check(action, String);
-    return ModerationPolicies.upsertAsync({ type }, { $set: { action } });
+    check(action, Match.OneOf(
+      ModerationAction.NoAction,
+      ModerationAction.Replace,
+      ModerationAction.Block,
+    ));
+    return ModerationPolicies.upsertAsync({ type }, { $set: { action, updatedAt: new Date } });
   },
-  async 'moderation.setPolicyFields'({ type, fields }) {
+
+  async 'moderation.setPolicyCustomField'({ type, customField }) {
     check(type, String);
-    check(fields, String);
-    ModerationPolicies.upsertAsync({ type }, { $set: { fields } });
+    check(customField, String);
+    ModerationPolicies.upsertAsync({ type }, { $set: { customField } });
   },
 });

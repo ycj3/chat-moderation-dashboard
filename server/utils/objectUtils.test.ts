@@ -1,50 +1,49 @@
-import { getValueByPath, setValueByPath } from "./objectUtils";
+import { getValueByField, setValueByField } from "./objectUtils";
 import { expect } from "chai";
 
-describe('getValueByPath', () => {
-    const obj = {
-        msg: {
-            content: 'hello',
-            metadata: { lang: 'en' },
+describe('getValueByField & setValueByField', () => {
+    const sample = {
+        user: { id: 'u1', name: 'Carlson' },
+        message: {
+            content: 'hi',
+            metadata: {
+                customField: 'value',
+            },
         },
     };
 
-    it('returns top-level field', () => {
-        expect(getValueByPath(obj, 'msg.content')).to.equal('hello');
+    it('should get a top-level nested field by name', () => {
+        const value = getValueByField(sample, 'name');
+        expect(value).to.equal('Carlson');
     });
 
-    it('returns nested field', () => {
-        expect(getValueByPath(obj, 'msg.metadata.lang')).to.equal('en');
+    it('should get a deep nested field by name', () => {
+        const value = getValueByField(sample, 'customField');
+        expect(value).to.equal('value');
     });
 
-    it('returns undefined for non-existent path', () => {
-        expect(getValueByPath(obj, 'msg.foo')).to.be.undefined;
+    it('should return undefined if field does not exist', () => {
+        const value = getValueByField(sample, 'notExist');
+        expect(value).to.be.undefined;
     });
 
-    it('returns object for empty path', () => {
-        expect(getValueByPath(obj, '')).to.equal(obj);
-    });
-});
-
-describe('setValueByPath', () => {
-    const obj = {
-        msg: {
-            content: 'hello',
-            metadata: { lang: 'en' },
-        },
-    };
-
-    it('sets top-level field', () => {
-        setValueByPath(obj, 'msg.content', 'world');
-        expect(obj.msg.content).to.equal('world');
+    it('should set a top-level nested field by name', () => {
+        const copy = JSON.parse(JSON.stringify(sample));
+        const success = setValueByField(copy, 'name', 'Ellie');
+        expect(success).to.be.true;
+        expect(copy.user.name).to.equal('Ellie');
     });
 
-    it('sets nested field', () => {
-        setValueByPath(obj, 'msg.metadata.lang', 'fr');
-        expect(obj.msg.metadata.lang).to.equal('fr');
+    it('should set a deep nested field by name', () => {
+        const copy = JSON.parse(JSON.stringify(sample));
+        const success = setValueByField(copy, 'customField', 'updated');
+        expect(success).to.be.true;
+        expect(copy.message.metadata.customField).to.equal('updated');
     });
 
-    it('does not throw for non-existent path when setting value', () => {
-        expect(() => setValueByPath(obj, 'non.existent.path', 'test')).to.not.throw();
+    it('should return false if field does not exist when setting', () => {
+        const copy = JSON.parse(JSON.stringify(sample));
+        const success = setValueByField(copy, 'unknownField', 'something');
+        expect(success).to.be.false;
     });
 });

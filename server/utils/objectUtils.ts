@@ -1,26 +1,40 @@
-// Helper: Safely get the value from an object by a dot-separated path.
-export function getValueByPath(obj: any, pathStr: string) {
-    if (pathStr === '') return obj; // Return the whole object if path is empty
-    const path = pathStr.split('.');
-    let current = obj;
-    for (const key of path) {
-        if (current == null || typeof current !== 'object') return undefined;
-        current = current[key];
+// Recursively get the value of a field (not by path)
+export function getValueByField(obj: any, field: string, seen = new Set()): any {
+    if (!field || typeof obj !== 'object' || obj === null) return undefined;
+    if (seen.has(obj)) return undefined; // prevent infinite recursion
+    seen.add(obj);
+
+    if (field in obj) return obj[field];
+
+    for (const key of Object.keys(obj)) {
+        const val = obj[key];
+        if (typeof val === 'object' && val !== null) {
+            const result = getValueByField(val, field, seen);
+            if (result !== undefined) return result;
+        }
     }
-    return current;
+
+    return undefined;
 }
 
-// Helper: Safely set the value into an object by a dot-separated path.
-export function setValueByPath(obj: any, pathStr: string, value: string) {
-    const path = pathStr.split('.');
-    let current = obj;
-    for (let i = 0; i < path.length - 1; i++) {
-        const key = path[i];
-        if (!(key in current) || typeof current[key] !== 'object') {
-            current[key] = {};
-        }
-        current = current[key];
+// Recursively set the value of a field (not by path)
+export function setValueByField(obj: any, field: string, value: any, seen = new Set()): boolean {
+    if (!field || typeof obj !== 'object' || obj === null) return false;
+    if (seen.has(obj)) return false; // prevent infinite recursion
+    seen.add(obj);
+
+    if (field in obj) {
+        obj[field] = value;
+        return true;
     }
-    const lastKey = path[path.length - 1];
-    current[lastKey] = value;
+
+    for (const key of Object.keys(obj)) {
+        const val = obj[key];
+        if (typeof val === 'object' && val !== null) {
+            const updated = setValueByField(val, field, value, seen);
+            if (updated) return true;
+        }
+    }
+
+    return false;
 }
