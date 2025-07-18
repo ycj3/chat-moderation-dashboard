@@ -59,6 +59,7 @@ WebApp.handlers.use('/webhook/moderate', jsonParser, async (req, res) => {
             } else if (messageBody.type === 'custom' && action === 'Replace With Asterisks (*)') {
                 const result = await replaceBlockedWords(content);
                 setValueByField(messageBody.customExts?.[0] || {}, policies.customField || '', result.updatedText);
+                setValueByField(messageBody["v2:customExts"] || {}, policies.customField || '', result.updatedText);
                 response.payload = payload;
             }
         }
