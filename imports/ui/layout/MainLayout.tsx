@@ -13,7 +13,7 @@ export default function MainLayout() {
     return (
         <div className="page">
             <aside
-                className="navbar navbar-vertical navbar-expand-sm position-absolute"
+                className="navbar navbar-vertical navbar-expand-sm position-absolute vh-100"
                 data-bs-theme="dark"
             >
                 <div className="container-fluid">
@@ -72,13 +72,13 @@ export default function MainLayout() {
             </aside>
             <div className="page-wrapper">
                 <div className="page-header d-print-none">
-                    <div className="container-xl">
+                    {/* <div className="container-xl">
                         <div className="row g-2 align-items-center">
                             <div className="col">
                                 <h2 className="page-title">Vertical layout</h2>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
                 <div className="page-body">
                     <div className="container-xl">
