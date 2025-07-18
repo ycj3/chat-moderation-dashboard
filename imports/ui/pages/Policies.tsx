@@ -82,7 +82,7 @@ export default function Policies() {
             <thead className="table-light">
               <tr>
                 <th style={{ width: "160px" }}>Message Type</th>
-                <th style={{ width: "220px" }}>Action</th>
+                <th style={{ width: "230px" }}>Action</th>
                 <th>Custom Moderation Field</th>
                 <th style={{ width: "100px" }}></th>
               </tr>
