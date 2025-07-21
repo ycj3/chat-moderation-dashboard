@@ -1,32 +1,42 @@
-import { Blocklist } from './collection';
+import { Blocklist } from "./collection";
 
 // Check if any blocklisted word exists
-export async function hasBlockedWords(text: string): Promise<boolean> {
+export async function hasBlockedWords(
+  text: string
+): Promise<{ isExisting: boolean; matchedWords: string[] }> {
   const rawBlocklist = await Blocklist.rawCollection()
     .find({}, { projection: { word: 1 } })
     .toArray();
 
-  const blockedWords = rawBlocklist.map(doc => doc.word).filter(Boolean);
+  const blockedWords = rawBlocklist.map((doc) => doc.word).filter(Boolean);
 
+  let isExisting = false;
+  const matchedWords = [];
   for (const word of blockedWords) {
     const isEnglish = /^[a-zA-Z0-9_]+$/.test(word);
     const pattern = isEnglish ? `\\b${word}\\b` : word;
-    const regex = new RegExp(pattern, 'i');
+    const regex = new RegExp(pattern, "i");
 
     if (regex.test(text)) {
-      return true; // Blocked word found
+      isExisting = true;
+      matchedWords.push(word);
     }
   }
-  return false;
+  return { isExisting, matchedWords }; // Blocked word found
 }
 
 // Replace blocklisted words with ***
-export async function replaceBlockedWords(text: string): Promise<{ updatedText: string; matches: { word: string; index: number }[] }> {
+export async function replaceBlockedWords(
+  text: string
+): Promise<{
+  updatedText: string;
+  matches: { word: string; index: number }[];
+}> {
   const rawBlocklist = await Blocklist.rawCollection()
     .find({}, { projection: { word: 1 } })
     .toArray();
 
-  const blockedWords = rawBlocklist.map(doc => doc.word).filter(Boolean);
+  const blockedWords = rawBlocklist.map((doc) => doc.word).filter(Boolean);
   console.log("Blocked words:", blockedWords);
 
   let updatedText = text;
@@ -37,7 +47,7 @@ export async function replaceBlockedWords(text: string): Promise<{ updatedText: 
     const isEnglish = /^[a-zA-Z0-9_]+$/.test(word);
     const pattern = isEnglish ? `\\b${word}\\b` : word;
 
-    const regex = new RegExp(pattern, 'gi'); // global, case-insensitive (for English)
+    const regex = new RegExp(pattern, "gi"); // global, case-insensitive (for English)
 
     let match;
 
@@ -45,16 +55,16 @@ export async function replaceBlockedWords(text: string): Promise<{ updatedText: 
     while ((match = regex.exec(updatedText)) !== null) {
       matches.push({
         word: match[0],
-        index: match.index
+        index: match.index,
       });
     }
 
     // Replace word with ***
-    updatedText = updatedText.replace(regex, '***');
+    updatedText = updatedText.replace(regex, "***");
   }
 
   return {
     updatedText,
-    matches
+    matches,
   };
 }
