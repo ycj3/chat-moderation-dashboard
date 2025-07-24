@@ -7,9 +7,9 @@ import {
 import { getValueByField, setValueByField } from "/server/utils/objectUtils";
 
 import { logDev } from "/imports/utils/logger";
+import { analyzeText } from "./providers/azure";
 
 export async function runModeration(body: any) {
-  logDev("runModeration", body);
   const { msg_id, from, to, chat_type, payload } = body;
   const messageBody = payload?.bodies?.[0] || {};
   const messageType = messageBody.type || "txt";
@@ -21,6 +21,7 @@ export async function runModeration(body: any) {
     payload: { msg_id, from, to, chat_type, bodies: [messageBody] },
   };
 
+  logDev("Moderation Policies", policies);
   if (!policies || policies.action === "No Action") return response;
 
   let content: string | undefined;
@@ -37,6 +38,7 @@ export async function runModeration(body: any) {
   if (!content) return response;
 
   const blockResult = await hasBlockedWords(content);
+  logDev("Block Result", blockResult);
   if (blockResult.isExisting) {
     if (policies.action === "Block From Sending") {
       response.valid = false;
@@ -71,6 +73,11 @@ export async function runModeration(body: any) {
       matchedKeywords: blockResult.matchedWords || [],
       createdAt: new Date(),
     });
+  } else {
+    logDev("Moderation content", content);
+    // 2. Run Azure Content Moderation
+    const azureResult = await analyzeText(content);
+    logDev("Azure Content Moderation Result", azureResult);
   }
 
   return response;
