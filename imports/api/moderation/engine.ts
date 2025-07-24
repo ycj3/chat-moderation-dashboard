@@ -8,8 +8,10 @@ import { getValueByField, setValueByField } from "/server/utils/objectUtils";
 
 import { logDev } from "/imports/utils/logger";
 import { analyzeText } from "./providers/azure";
+import { AgoraChatCallbackPayload } from "../../types/AgoraChat";
+import { isTextMessage, isCustomMessage } from "/imports/utils/typeGuards";
 
-export async function runModeration(body: any) {
+export async function runModeration(body: AgoraChatCallbackPayload) {
   const { msg_id, from, to, chat_type, payload } = body;
   const messageBody = payload?.bodies?.[0] || {};
   const messageType = messageBody.type || "txt";
@@ -26,9 +28,9 @@ export async function runModeration(body: any) {
 
   let content: string | undefined;
 
-  if (messageType === "txt") {
+  if (isTextMessage(messageBody)) {
     content = messageBody.msg;
-  } else if (messageType === "custom") {
+  } else if (isCustomMessage(messageBody)) {
     content = getValueByField(
       messageBody.customExts?.[0] || {},
       policies.customField || ""
@@ -45,9 +47,9 @@ export async function runModeration(body: any) {
       response.code = "This message contains blocked content";
     } else if (policies.action === "Replace With Asterisks (*)") {
       const replaced = await replaceBlockedWords(content);
-      if (messageType === "txt") {
+      if (isTextMessage(messageBody)) {
         messageBody.msg = replaced.updatedText;
-      } else if (messageType === "custom") {
+      } else if (isCustomMessage(messageBody)) {
         setValueByField(
           messageBody.customExts?.[0] || {},
           policies.customField || "",
