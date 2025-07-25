@@ -113,14 +113,18 @@ export default function Logs() {
             <tr key={log._id}>
               <td>{new Date(log.createdAt).toLocaleString()}</td>
               <td>
-                {log.from} → {log.to}
+                {log.callbackPayload.payload.from} →{" "}
+                {log.callbackPayload.payload.to}
               </td>
               <td>
-                {log.chatType}/{log.messageType}
+                {log.callbackPayload.payload.chatType}/
+                {log.callbackPayload.payload.bodies[0].type}
               </td>
               <td>{log.content}</td>
               <td>
-                <span className="badge bg-blue text-blue-fg">{log.action}</span>
+                <span className="badge bg-blue text-blue-fg">
+                  {log.policy.action}
+                </span>
               </td>
               <td>{log.matchedKeywords?.join(", ") || "-"}</td>
             </tr>

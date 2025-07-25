@@ -1,3 +1,12 @@
+export interface AgoraChatMessage {
+  from: string;
+  to: string;
+  chatType: ChatType;
+  bodies: AgoraChatMessageBody[];
+  meta: Record<string, any>;
+  ext: Record<string, any>;
+}
+
 export interface AgoraChatCallbackPayload {
   callId: string;
   timestamp: number;
@@ -7,14 +16,7 @@ export interface AgoraChatCallbackPayload {
   from: string;
   to: string;
   msg_id: string;
-  payload: {
-    bodies: AgoraChatMessageBody[];
-    ext: Record<string, any>;
-    from: string;
-    meta: Record<string, any>;
-    to: string;
-    type: ChatType;
-  };
+  payload: AgoraChatMessage;
   security: string;
   app_id: string;
 }

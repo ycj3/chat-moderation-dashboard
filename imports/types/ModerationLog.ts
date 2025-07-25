@@ -1,14 +1,11 @@
-import { ChatType } from "./AgoraChat";
+import { ModerationPolicy } from "./ModerationPolicy";
+import { AgoraChatCallbackPayload } from "./AgoraChat";
 
 export type ModerationLog = {
   _id?: string;
-  msgId: string;
-  from: string;
-  to: string;
-  chatType: ChatType;
-  messageType: "txt" | "custom" | string;
+  callbackPayload: AgoraChatCallbackPayload;
+  policy: ModerationPolicy;
   content: string;
-  action: "No Action" | "Replace With Asterisks (*)" | "Block From Sending";
   matchedKeywords?: string[];
   createdAt: Date;
 };

@@ -63,15 +63,10 @@ export async function runModeration(body: AgoraChatCallbackPayload) {
       }
       response.payload = body.payload;
     }
-
     await ModerationLogs.insertAsync({
-      msgId: msg_id,
-      from,
-      to,
-      chatType: chat_type,
-      messageType,
-      content,
-      action: policies.action,
+      callbackPayload: body,
+      policy: policies,
+      content: content,
       matchedKeywords: blockResult.matchedWords || [],
       createdAt: new Date(),
     });
