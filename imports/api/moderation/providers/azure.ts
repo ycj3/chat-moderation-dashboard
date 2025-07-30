@@ -13,7 +13,7 @@ import { AzureKeyCredential } from "@azure/core-auth";
  * @param text The text content to analyze
  * @returns Array of analysis results (category and severity)
  */
-export async function analyzeText(
+async function analyzeText(
   text: string
 ): Promise<TextCategoriesAnalysisOutput[]> {
   const endpoint = process.env.CONTENT_SAFETY_ENDPOINT;
@@ -43,4 +43,57 @@ export async function analyzeText(
   }
 
   return result.body.categoriesAnalysis ?? [];
+}
+
+export async function moderateTextByAzure(
+  text: string
+): Promise<TextCategoriesAnalysisOutput[]> {
+  try {
+    const analysisResults = await analyzeText(text);
+    return analysisResults;
+  } catch (error) {
+    console.error("Error analyzing text with Azure Content Safety:", error);
+    throw error;
+  }
+}
+
+async function analysisTextWithBlocklistByAzure(
+  text: string,
+  blocklistName: string
+): Promise<TextCategoriesAnalysisOutput[]> {
+  const analyzeTextParameters = {
+    body: {
+      text: text,
+      blocklistNames: [blocklistName],
+      haltOnBlocklistHit: false,
+    },
+  };
+
+  const result = await client.path("/text:analyze").post(analyzeTextParameters);
+
+  if (isUnexpected(result)) {
+    throw result;
+  }
+
+  console.log("Blocklist match results: ");
+  if (result.body.blocklistsMatch) {
+    for (const blocklistMatchResult of result.body.blocklistsMatch) {
+      console.log(
+        "BlocklistName: ",
+        blocklistMatchResult.blocklistName,
+        ", BlockItemId: ",
+        blocklistMatchResult.blocklistItemId,
+        ", BlockItemText: ",
+        blocklistMatchResult.blocklistItemText
+      );
+    }
+  }
+}
+
+export async function moderateImageByAzure(
+  imageUrl: string
+): Promise<TextCategoriesAnalysisOutput[]> {
+  // Placeholder for image moderation logic
+  // Azure Content Safety currently does not support image moderation directly
+  throw new Error("Image moderation is not implemented yet.");
 }
