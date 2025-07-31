@@ -1,7 +1,15 @@
 // imports/utils/logger.ts
-export function logDev(tag: string, ...args: any[]) {
-    if (process.env.NODE_ENV === 'production') return;
+import util from "util";
 
-    const time = new Date().toISOString();
-    console.log(`[${time}] [${tag}]`, ...args);
+export function logDev(tag: string, ...args: any[]) {
+  if (process.env.NODE_ENV === "production") return;
+
+  const time = new Date().toISOString();
+  const formatted = args.map((arg) => {
+    return typeof arg === "object"
+      ? util.inspect(arg, { depth: null, colors: true })
+      : arg;
+  });
+
+  console.log(`[${time}] [${tag}]`, ...formatted);
 }

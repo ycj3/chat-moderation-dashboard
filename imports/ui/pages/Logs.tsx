@@ -101,10 +101,9 @@ export default function Logs() {
         <thead>
           <tr>
             <th>Time</th>
-            <th>From → To</th>
-            <th>Type</th>
+            <th>Message ID</th>
             <th>Content</th>
-            <th>Action</th>
+            <th>Result</th>
             <th>Keywords</th>
           </tr>
         </thead>
@@ -112,21 +111,12 @@ export default function Logs() {
           {logs.map((log) => (
             <tr key={log._id}>
               <td>{new Date(log.createdAt).toLocaleString()}</td>
-              <td>
-                {log.callbackPayload.payload.from} →{" "}
-                {log.callbackPayload.payload.to}
-              </td>
-              <td>
-                {log.callbackPayload.payload.chatType}/
-                {log.callbackPayload.payload.bodies[0].type}
-              </td>
+              <td>{log.msgId}</td>
               <td>{log.content}</td>
               <td>
-                <span className="badge bg-blue text-blue-fg">
-                  {log.policy.action}
-                </span>
+                <span className="badge bg-blue text-blue-fg">{log.action}</span>
               </td>
-              <td>{log.matchedKeywords?.join(", ") || "-"}</td>
+              {/* <td>{log.matchedKeywords?.join(", ") || "-"}</td> */}
             </tr>
           ))}
         </tbody>

@@ -1,13 +1,9 @@
 import { ModerationPolicies } from "./policies/collection";
 import { ModerationLogs } from "./logs/collection";
-import {
-  hasBlockedWords,
-  replaceBlockedWords,
-} from "/imports/api/blocklist/service";
-import { getValueByField, setValueByField } from "/server/utils/objectUtils";
+import { getValueByField } from "/server/utils/objectUtils";
 
 import { logDev } from "/imports/utils/logger";
-import { analyzeText } from "./providers/azure";
+import { AzureTextModerationProvider } from "./providers/azure/text";
 import { AgoraChatCallbackPayload } from "../../types/AgoraChat";
 import { isTextMessage, isCustomMessage } from "/imports/utils/typeGuards";
 
@@ -39,43 +35,24 @@ export async function runModeration(body: AgoraChatCallbackPayload) {
 
   if (!content) return response;
 
-  const blockResult = await hasBlockedWords(content);
-  logDev("Block Result", blockResult);
-  if (blockResult.isExisting) {
-    if (policies.action === "Block From Sending") {
-      response.valid = false;
-      response.code = "This message contains blocked content";
-    } else if (policies.action === "Replace With Asterisks (*)") {
-      const replaced = await replaceBlockedWords(content);
-      if (isTextMessage(messageBody)) {
-        messageBody.msg = replaced.updatedText;
-      } else if (isCustomMessage(messageBody)) {
-        setValueByField(
-          messageBody.customExts?.[0] || {},
-          policies.customField || "",
-          replaced.updatedText
-        );
-        setValueByField(
-          messageBody["v2:customExts"] || {},
-          policies.customField || "",
-          replaced.updatedText
-        );
-      }
-      response.payload = body.payload;
-    }
-    await ModerationLogs.insertAsync({
-      callbackPayload: body,
-      policy: policies,
-      content: content,
-      matchedKeywords: blockResult.matchedWords || [],
-      createdAt: new Date(),
-    });
-  } else {
-    logDev("Moderation content", content);
-    // 2. Run Azure Content Moderation
-    const azureResult = await analyzeText(content);
-    logDev("Azure Content Moderation Result", azureResult);
-  }
+  const azureProvider = AzureTextModerationProvider;
+  const result = await azureProvider.moderateText(content);
 
+  await ModerationLogs.insertAsync({
+    msgId: msg_id,
+    from,
+    to,
+    chatType: chat_type,
+    messageType,
+    content,
+    provider: azureProvider.name,
+    feature: "text",
+    result: result.normalized,
+    action: "TODO: determine action based on result",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    rawResponse: body,
+  });
+  logDev("Moderation Result", result);
   return response;
 }
